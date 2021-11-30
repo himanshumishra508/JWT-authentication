@@ -1,8 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const morgan = require("morgan");
 const auth_route = require("./routes/auth.route");
 const app = express();
 require("dotenv").config();
+
+app.use(morgan("dev"));
 
 mongoose.connect(process.env.DB_CONNECTION_URI, () =>
   console.log("Connected to DB")
