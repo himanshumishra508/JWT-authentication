@@ -28,6 +28,44 @@ const register = async (req, res) => {
   }
 };
 
+const login = async (req, res) => {
+  console.log("entered");
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "email or password is incorrect",
+      });
+    }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.json({ success: false, message: "Wrong password" });
+    }
+
+    //signing access token
+    const access_token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: process.env.JWT_ACCESS_TIME }
+    );
+    //signing refresh token
+    const refresh_token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_REFRESH_SECRET
+    );
+    return res.json({
+      success: true,
+      message: "Login success",
+      data: { access_token, refresh_token },
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 module.exports = {
   register,
+  login,
 };
