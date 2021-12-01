@@ -10,7 +10,7 @@ const verifyToken = (req, res, next) => {
       .json({ success: false, message: "Not valid session" });
   }
   try {
-    const decodedData = jwt.verify(token, JWT_ACCESS_SECRET);
+    const decodedData = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
     req.userData = decodedData;
     next();
   } catch (error) {
