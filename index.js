@@ -1,11 +1,13 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
+const cors = require("cors");
 const auth_route = require("./routes/auth.route");
 const user_route = require("./routes/user.route");
 const app = express();
 require("dotenv").config();
 
+app.use(cors());
 app.use(morgan("dev"));
 
 mongoose.connect(process.env.DB_CONNECTION_URI, () =>
