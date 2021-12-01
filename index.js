@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const auth_route = require("./routes/auth.route");
+const user_route = require("./routes/user.route");
 const app = express();
 require("dotenv").config();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/api/auth", auth_route);
+app.use("/api/user", user_route);
 
 const PORT = process.env.PORT || 3000;
 
