@@ -28,7 +28,7 @@ const verifyRefreshToken = (req, res, next) => {
       .json({ success: false, message: "Not valid session" });
   try {
     const decoded = jwt.verify(refresh_token, process.env.JWT_REFRESH_SECRET);
-    redis_client.get(decoded.id.toSting(), (err, data) => {
+    redis_client.get(decoded.id.toString(), (err, data) => {
       if (err) throw err;
 
       //referesh token not in redis store
