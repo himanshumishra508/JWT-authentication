@@ -2,6 +2,7 @@ const User = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const redis_client = require("../redis_connection");
+const sendMail = require("../helpers/mail");
 
 const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -23,7 +24,10 @@ const register = async (req, res) => {
     });
 
     await user.save();
-    return res.json({ success: true, message: "User created", data: user });
+    const authToken = jwt.sign({id:user._id,email:email},process.env.JWT_ACCESS_SECRET,{expiresIn:"20m"});
+    sendMail(email,authToken);
+    await redis_client.setex(email,1200,authToken);
+    return res.json({ success: true, message: "Verification link send to email"});
   } catch (error) {
     return res.status(400).json({ success: false });
   }
