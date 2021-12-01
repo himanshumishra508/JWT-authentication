@@ -91,8 +91,16 @@ const getAccessToken = (req, res) => {
   });
 };
 
+const logout = async (req, res) => {
+  const user_id = req.userData.id;
+
+  await redis_client.del(user_id.toString());
+  return res.json({ success: true, message: "Logged out successfully" });
+};
+
 module.exports = {
   register,
   login,
   getAccessToken,
+  logout,
 };
