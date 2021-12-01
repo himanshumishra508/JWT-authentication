@@ -93,8 +93,10 @@ const getAccessToken = (req, res) => {
 
 const logout = async (req, res) => {
   const user_id = req.userData.id;
+  const access_token = req.header("Authorization").split(" ")[1];
 
   await redis_client.del(user_id.toString());
+  await redis_client.setex("BL_"+access_token,process.env.JWT_BLOCK_TIME,1);
   return res.json({ success: true, message: "Logged out successfully" });
 };
 

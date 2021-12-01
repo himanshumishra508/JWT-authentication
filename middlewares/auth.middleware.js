@@ -11,8 +11,15 @@ const verifyToken = (req, res, next) => {
   }
   try {
     const decodedData = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
-    req.userData = decodedData;
-    next();
+
+    //Check if jwt is in blocked list
+    redis_client.get("BL_" + token, (err, data) => {
+      if (err) throw err;
+
+      if (data==="1") return res.status(401).json({success:false,message:"Not valid session"});
+      req.userData = decodedData;
+      next();
+    });    
   } catch (error) {
     return res
       .status(401)
