@@ -67,13 +67,32 @@ const generateRefreshToken = (user_id, email) => {
     { id: user_id, email: email },
     process.env.JWT_REFRESH_SECRET
   );
-  
+
   redis_client.set(user_id.toString(), refresh_token);
 
   return refresh_token;
 };
 
+const getAccessToken = (req, res) => {
+  const user_id = req.userData.id;
+  const email = req.userData.email;
+  const access_token = jwt.sign(
+    { id: user_id, email: email },
+    process.env.JWT_ACCESS_SECRET,
+    {
+      expiresIn: process.env.JWT_ACCESS_TIME,
+    }
+  );
+  const refresh_token = generateRefreshToken(user_id, email);
+  return res.json({
+    success: true,
+    message: "Generated access token",
+    data: { access_token, refresh_token },
+  });
+};
+
 module.exports = {
   register,
   login,
+  getAccessToken,
 };
