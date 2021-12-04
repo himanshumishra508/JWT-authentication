@@ -26,7 +26,7 @@ const register = async (req, res) => {
     await user.save();
     const authToken = jwt.sign({id:user._id,email:email},process.env.JWT_ACCESS_SECRET,{expiresIn:"20m"});
     sendMail(email,authToken);
-    await redis_client.setex(email,1200,authToken);
+    
     return res.json({ success: true, message: "Verification link send to email"});
   } catch (error) {
     return res.status(400).json({ success: false });
