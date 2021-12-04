@@ -24,12 +24,41 @@ const register = async (req, res) => {
     });
 
     await user.save();
-    const authToken = jwt.sign({id:user._id,email:email},process.env.JWT_ACCESS_SECRET,{expiresIn:"20m"});
-    sendMail(email,authToken);
-    
-    return res.json({ success: true, message: "Verification link send to email"});
+    const authToken = jwt.sign(
+      { id: user._id, email: email },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: "20m" }
+    );
+    sendMail(email, authToken);
+
+    return res.json({
+      success: true,
+      message: "Verification link send to email",
+    });
   } catch (error) {
     return res.status(400).json({ success: false });
+  }
+};
+
+const verify = async (req, res) => {
+  const token = req.params.token;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    const { email } = decoded;
+    const user = await User.findOne({ email: email });
+
+    if (!user) 
+      throw "Incorrect verification link";
+
+    if(user.user_verified)
+    return res.json({success:true,message:"Account already verified"});
+
+    user.user_verified=true;
+    await user.save();
+    return res.json({success:true,message:"Account Verified"});
+
+  } catch (error) {
+    return res.json({ success: false, message: "Verification link expired" });
   }
 };
 
@@ -48,6 +77,8 @@ const login = async (req, res) => {
       return res.json({ success: false, message: "Wrong password" });
     }
 
+    if(!user.user_verified)
+    throw "Account not verified";
     //signing access token
     const access_token = jwt.sign(
       { id: user._id, email: user.email },
@@ -63,6 +94,7 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    return res.json({success:false,error:error});
   }
 };
 
@@ -100,12 +132,13 @@ const logout = async (req, res) => {
   const access_token = req.header("Authorization").split(" ")[1];
 
   await redis_client.del(user_id.toString());
-  await redis_client.setex("BL_"+access_token,process.env.JWT_BLOCK_TIME,1);
+  await redis_client.setex("BL_" + access_token, process.env.JWT_BLOCK_TIME, 1);
   return res.json({ success: true, message: "Logged out successfully" });
 };
 
 module.exports = {
   register,
+  verify,
   login,
   getAccessToken,
   logout,
