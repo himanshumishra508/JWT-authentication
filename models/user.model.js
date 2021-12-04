@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  user_verified: {
+    type: Boolean,
+    default: false,
+  },
   created_at: {
     type: Date,
     default: Date.now,
